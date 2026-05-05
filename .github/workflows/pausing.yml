@@ -92,7 +92,7 @@ jobs:
             ' bridge_status_template.json > "$OUTDIR/$CURRENT_PHASE"
 
       - name: Show result
-        run:
+        run: |
           OUTDIR=./public/admin-actions/bridge-status/
           cat "$OUTDIR/$CURRENT_PHASE"
 
