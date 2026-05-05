@@ -71,7 +71,7 @@ jobs:
           ISM_ADDRESS: ${{ steps.eth_ism_address.outputs.result }}
         run: |
           OUTDIR=.public/admin-actions/bridge-status/
-          mkdir -p $OUTDIR
+          mkdir -p "$OUTDIR"
 
           [ "$ETH_HOOK_STATUS" = "true" ] || [ "$ETH_ISM_STATUS" = "true" ] && EVM_STATUS=true || EVM_STATUS=false
           [ "$EVM_STATUS" = "true" ] || [ "$KDA_STATUS" = "true" ] && OVERALL_STATUS=true || OVERALL_STATUS=false
@@ -81,11 +81,11 @@ jobs:
             --argjson evm_paused "$EVM_STATUS" \
             --argjson kda_paused "$KDA_STATUS" \
             --argjson overall_paused "$OVERALL_STATUS" \
-            'data.phase = $phase
-            | data.evm.paused = $evm_paused
-            | data.evm.ismaddress = $ismaddress
-            | data.kda.paused = $kda_paused
-            | data.overallPaused = $overall_paused
+            '.data.phase = $phase
+            | .data.evm.paused = $evm_paused
+            | .data.evm.ismaddress = $ismaddress
+            | .data.kda.paused = $kda_paused
+            | .data.overallPaused = $overall_paused
             ' bridge_status_template.json > "$OUTDIR/$CURRENT_PHASE"
 
       - name: Show result
