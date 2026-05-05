@@ -81,11 +81,11 @@ jobs:
             --argjson evm_paused "$EVM_STATUS" \
             --argjson kda_paused "$KDA_STATUS" \
             --argjson overall_paused "$OVERALL_STATUS" \
-            '.phase = $phase
-            | .evm.paused = $evm_paused
-            | .evm.ismaddress = $ismaddress
-            | .kda.paused = $kda_paused
-            | .overallPaused = $overall_paused
+            'data.phase = $phase
+            | data.evm.paused = $evm_paused
+            | data.evm.ismaddress = $ismaddress
+            | data.kda.paused = $kda_paused
+            | data.overallPaused = $overall_paused
             ' bridge_status_template.json > "$OUTDIR/$CURRENT_PHASE"
 
       - name: Show result
