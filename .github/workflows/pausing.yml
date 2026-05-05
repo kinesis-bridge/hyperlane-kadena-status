@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
           $KDA_TOOL_BIN gen -t get_pause_state.tkpl -d config.yaml
           $KDA_TOOL_BIN local --no-verify-sigs tx.yaml
-          RES=$($KDA_TOOL_BIN local --no-verify-sigs tx.yaml | jq -er '.[][].body.result.data')
+          RES=$($KDA_TOOL_BIN local --no-verify-sigs tx.yaml | jq -r '.[][].body.result.data')
           echo "result=$RES" >> "$GITHUB_OUTPUT"
 
       - name: Get ISM Address
