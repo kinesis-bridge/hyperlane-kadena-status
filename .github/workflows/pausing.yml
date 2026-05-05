@@ -10,6 +10,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     env:
       KDA_TOOL_VERSION: "1.2"
       ETH_RPC_URL: ${{ vars.ETH_RPC_URL }}
