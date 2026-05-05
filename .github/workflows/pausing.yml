@@ -4,14 +4,14 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   fetch-and-publish-status:
-
-
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
 
     env:
       KDA_TOOL_VERSION: "1.2"
