@@ -93,7 +93,8 @@ jobs:
 
       - name: Show result
         run:
-          cat .public/admin-actions/bridge-status/mainnet
+          OUTDIR=./public/admin-actions/bridge-status/
+          cat "$OUTDIR/$CURRENT_PHASE"
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
