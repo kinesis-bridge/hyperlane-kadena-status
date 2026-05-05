@@ -1,0 +1,11 @@
+code: ({{ns}}.mailbox.paused)
+
+meta:
+  chainId: "{{chain}}"
+  sender: nobody
+  gasLimit: 1000
+  gasPrice: 0.00000001
+  ttl: 86400
+
+networkId: {{network}}
+signers:
