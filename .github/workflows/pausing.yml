@@ -73,7 +73,7 @@ jobs:
           KDA_STATUS: ${{ steps.kda_status.outputs.result }}
           ISM_ADDRESS: ${{ steps.eth_ism_address.outputs.result }}
         run: |
-          OUTDIR=.public/admin-actions/bridge-status/
+          OUTDIR=./public/admin-actions/bridge-status/
           mkdir -p "$OUTDIR"
 
           [ "$ETH_HOOK_STATUS" = "true" ] || [ "$ETH_ISM_STATUS" = "true" ] && EVM_STATUS=true || EVM_STATUS=false
