@@ -91,3 +91,9 @@ jobs:
       - name: Show result
         run:
           cat .public/admin-actions/bridge-status/mainnet
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
