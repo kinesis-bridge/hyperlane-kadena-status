@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "data": {
+    "phase": null,
+    "evm": {
+      "paused": null,
+      "network": "Ethereum",
+      "ismaddress": null
+    },
+    "kda": {
+      "paused": null,
+      "chaons": [
+        2
+      ],
+      "networks": [
+        "mainnet01"
+      ]
+    },
+    "overallPaused": null
+  }
+}

@@ -1,0 +1,88 @@
+name: Pause Workflow
+on:
+  push:
+
+  workflow_dispatch:
+
+jobs:
+  fetch-and-publish-status:
+
+
+    runs-on: ubuntu-latest
+
+    env:
+      KDA_TOOL_VERSION: "1.2"
+      ETH_RPC_URL: ${{ vars.ETH_RPC_URL }}
+      KADENA_RPC_URL: ${{ vars.KADENA_RPC_URL }}
+      PAUSE_HOOK_ADDR: 0x9e55757C3EF8bcA9015F9d0A6287ccE79215cA07
+      PAUSE_ISM_ADDR: 0xDeC953FDf8890AEDb5C549dF472A1231baBcE8AC
+      MAIBLOX_ADDRESS: 0x82A729A4c7B2aeBDdbFCCF533e7B75c61c45c23c
+      CURRENT_PHASE: mainnet
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Install KDA tool
+        run: |
+          ARCHIVE=kda-tool-${KDA_TOOL_VERSION}-ubuntu-24.04.tar.gz
+          wget https://github.com/kda-community/kda-tool/releases/download/${KDA_TOOL_VERSION}/$ARCHIVE
+          tar xzf $ARCHIVE
+          echo "KDA_TOOL_BIN=kda-tool-${KDA_TOOL_VERSION}/kda" >> "$GITHUB_ENV"
+
+      - name: Configure KDA tool
+        run: |
+          mkdir -p .config/kda
+          jq -n --arg value "$KADENA_RPC_URL" '{networks: {mainnet01: $value}}' > .config/kda/config.json
+
+      - name: Get Kadena Status
+        id: kda_status
+        run: |
+          set -euo pipefail
+          $KDA_TOOL_BIN gen -t get_pause_state.tkpl -d config.yaml
+          RES=$($KDA_TOOL_BIN local --no-verify-sigs tx.yaml | jq -er '.[][].body.result.data')
+          echo "result=$RES" >> "$GITHUB_OUTPUT"
+
+      - name: Get ISM Address
+        id: eth_ism_address
+        run: |
+          set -euo pipefail
+          RES=$(cast call $MAIBLOX_ADDRESS "defaultIsm()(address)")
+          echo "result=$RES" >> "$GITHUB_OUTPUT"
+
+      - name: Get Ethereum Status
+        id: eth_status
+        run: |
+          set -euo pipefail
+          RES_HOOK=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)")
+          RES_ISM=$(cast call $PAUSE_ISM_ADDR "paused()(bool)")
+          echo "result_hook=$RES_HOOK" >> "$GITHUB_OUTPUT"
+          echo "result_ism=$RES_ISM" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare results
+        env:
+          ETH_HOOK_STATUS: ${{ steps.eth_status.outputs.result_hook }}
+          ETH_ISM_STATUS: ${{ steps.eth_status.outputs.result_ism }}
+          KDA_STATUS: ${{ steps.kda_status.outputs.result }}
+          ISM_ADDRESS: ${{ steps.eth_ism_address.outputs.result }}
+        run: |
+          OUTDIR=public/admin-actions/bridge-status/
+          mkdir -p $OUTDIR
+
+          [ "$ETH_HOOK_STATUS" = "true" ] || [ "$ETH_ISM_STATUS" = "true" ] && EVM_STATUS=true || EVM_STATUS=false
+          [ "$EVM_STATUS" = "true" ] || [ "$KDA_STATUS" = "true" ] && OVERALL_STATUS=true || OVERALL_STATUS=false
+
+          jq --arg phase "$CURRENT_PHASE" \
+            --arg ismaddress "$ISM_ADDRESS" \
+            --argjson evm_paused "$EVM_STATUS" \
+            --argjson kda_paused "$KDA_STATUS" \
+            --argjson overall_paused "$OVERALL_STATUS" \
+            '.phase = $phase
+            | .evm.paused = $evm_paused
+            | .evm.ismaddress = $ismaddress
+            | .kda.paused = $kda_paused
+            | .overallPaused = $overall_paused
+            ' bridge_status_template.json > "$OUTDIR/$CURRENT_PHASE"
