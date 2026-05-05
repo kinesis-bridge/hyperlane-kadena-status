@@ -35,8 +35,8 @@ jobs:
 
       - name: Configure KDA tool
         run: |
-          mkdir -p .config/kda
-          jq -n --arg value "$KADENA_RPC_URL" '{networks: {mainnet01: $value}}' > .config/kda/config.json
+          mkdir -p ~/.config/kda
+          jq -n --arg value "$KADENA_RPC_URL" '{networks: {mainnet01: $value}}' > ~/.config/kda/config.json
 
       - name: Get Kadena Status
         id: kda_status
