@@ -96,9 +96,24 @@ jobs:
           OUTDIR=./public/admin-actions/bridge-status/
           cat "$OUTDIR/$CURRENT_PHASE"
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          cname: hyperlane-status.chainweb-community.org
+      - name: Add Canme file
+        run: |
+          echo "https://hyperlane-status.chainweb-community.org/"  > ./public/CNAME
+
+
+      - name: Send Artifact
+          uses: actions/upload-pages-artifact@v3
+          with:
+            path: ./public
+
+  deploy:
+    name: Deploy Website
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
