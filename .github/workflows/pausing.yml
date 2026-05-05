@@ -102,9 +102,9 @@ jobs:
 
 
       - name: Send Artifact
-          uses: actions/upload-pages-artifact@v3
-          with:
-            path: ./public
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
 
   deploy:
     name: Deploy Website
