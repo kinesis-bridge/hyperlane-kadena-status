@@ -69,7 +69,7 @@ jobs:
           KDA_STATUS: ${{ steps.kda_status.outputs.result }}
           ISM_ADDRESS: ${{ steps.eth_ism_address.outputs.result }}
         run: |
-          OUTDIR=public/admin-actions/bridge-status/
+          OUTDIR=.public/admin-actions/bridge-status/
           mkdir -p $OUTDIR
 
           [ "$ETH_HOOK_STATUS" = "true" ] || [ "$ETH_ISM_STATUS" = "true" ] && EVM_STATUS=true || EVM_STATUS=false
@@ -86,3 +86,7 @@ jobs:
             | .kda.paused = $kda_paused
             | .overallPaused = $overall_paused
             ' bridge_status_template.json > "$OUTDIR/$CURRENT_PHASE"
+
+      - name: Show result
+        run:
+          cat .public/admin-actions/bridge-status/mainnet
