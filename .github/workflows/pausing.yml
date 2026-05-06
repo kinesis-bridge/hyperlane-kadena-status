@@ -96,10 +96,9 @@ jobs:
           OUTDIR=./public/admin-actions/bridge-status/
           cat "$OUTDIR/$CURRENT_PHASE"
 
-      - name: Add Canme file
+      - name: Add CNAME file
         run: |
-          echo "https://hyperlane-status.chainweb-community.org/"  > ./public/CNAME
-
+          cat CNAME > ./public/CNAME
 
       - name: Send Artifact
         uses: actions/upload-pages-artifact@v3
