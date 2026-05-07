@@ -43,6 +43,7 @@ jobs:
 
       - name: Get Kadena Status
         id: kda_status
+        shell: bash
         run: |
           set -euo pipefail
           $KDA_TOOL_BIN gen -t get_pause_state.tkpl -d config.yaml
@@ -51,6 +52,7 @@ jobs:
           echo "result=$RES" >> "$GITHUB_OUTPUT"
 
       - name: Get ISM Address
+        shell: bash
         id: eth_ism_address
         run: |
           set -euo pipefail
@@ -59,6 +61,7 @@ jobs:
 
       - name: Get Ethereum Status
         id: eth_status
+        shell: bash
         run: |
           set -euo pipefail
           RES_HOOK=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)")
@@ -66,12 +69,14 @@ jobs:
           echo "result_hook=$RES_HOOK" >> "$GITHUB_OUTPUT"
           echo "result_ism=$RES_ISM" >> "$GITHUB_OUTPUT"
 
-      - name: Prepare results
+      - name: Prepare stopped results
         env:
           ETH_HOOK_STATUS: ${{ steps.eth_status.outputs.result_hook }}
           ETH_ISM_STATUS: ${{ steps.eth_status.outputs.result_ism }}
           KDA_STATUS: ${{ steps.kda_status.outputs.result }}
           ISM_ADDRESS: ${{ steps.eth_ism_address.outputs.result }}
+
+        shell: bash
         run: |
           OUTDIR=./public/admin-actions/bridge-status/
           mkdir -p "$OUTDIR"
@@ -91,15 +96,59 @@ jobs:
             | .data.overallPaused = $overall_paused
             ' bridge_status_template.json > "$OUTDIR/$CURRENT_PHASE"
 
+      - name: Prepare banners
+        env:
+          ETH_HOOK_STATUS: ${{ steps.eth_status.outputs.result_hook }}
+          ETH_ISM_STATUS: ${{ steps.eth_status.outputs.result_ism }}
+          KDA_STATUS: ${{ steps.kda_status.outputs.result }}
+
+        shell: bash
+        run: |
+          set -euo pipefail
+          DATE=$(date)
+
+          jq -n "[]" > banners.json
+
+          add_banner () {
+          if [ -s "$1" ]
+            then
+              id=$(shuf -i 0-1000000 -n 1)
+              msg=$(cat "$1")
+              jq --arg msg "$msg" \
+                 --argjson id "$id" \
+                 --arg createdAt "$DATE" \
+                 --arg bannerType "$2" \
+                 '. += [{"bannerMessage": $msg, "id": $id, "createdAt": $createdAt, "visibilityState": "On", "bannerType": $bannerType }]' \
+                 banners.json > tmp.json
+              cat tmp.json > banners.json
+          fi
+          }
+
+          [ "$ETH_HOOK_STATUS" = "true" ] || [ "$ETH_ISM_STATUS" = "true" ] ||  [ "$KDA_STATUS" = "true" ]  \
+            && OVERALL_STATUS=true || OVERALL_STATUS=false
+
+          if [ $OVERALL_STATUS = "true" ]
+            then echo "Bridge is currently stopped" > stopped_banner
+          fi
+
+
+          add_banner "banners/ERROR"      "Error"
+          add_banner "banners/WARNING"    "Warning"
+          add_banner "banners/INFO"       "Info"
+          add_banner "banners/EXTRA_INFO" "Info"
+          add_banner "stopped_banner"     "Error"
+
+          mkdir -p ./public/banner/
+          cat banners.json >  ./public/banner/active
+
       - name: Show result
         run: |
           OUTDIR=./public/admin-actions/bridge-status/
           cat "$OUTDIR/$CURRENT_PHASE"
 
-      - name: Add Canme file
+      - name: Add CNAME file
         run: |
-          echo "https://hyperlane-status.chainweb-community.org/"  > ./public/CNAME
-
+          cat CNAME > ./public/CNAME
 
       - name: Send Artifact
         uses: actions/upload-pages-artifact@v3
