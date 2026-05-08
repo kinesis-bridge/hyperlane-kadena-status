@@ -73,7 +73,7 @@ jobs:
 
           echo "Eth Address: $ETH_ADDR"
           echo "ETH_ADDR=$ETH_ADDR" >> "$GITHUB_ENV"
-          echo "ETH_NONCE=$ETH_NONCE" >> "$GITHUB_ENV"
+          echo "ETH_NONCE=$NONCE" >> "$GITHUB_ENV"
 
 
       - name: Pause Kadena contract
