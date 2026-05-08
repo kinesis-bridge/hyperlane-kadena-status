@@ -13,14 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      IN_PAUSE: ${{ inputs.in_pause }}
+
       KDA_TOOL_VERSION: "1.2"
       ETH_RPC_URL: ${{ vars.ETH_RPC_URL }}
       KADENA_RPC_URL: ${{ vars.KADENA_RPC_URL }}
       PAUSE_HOOK_ADDR: "0x9e55757C3EF8bcA9015F9d0A6287ccE79215cA07"
       PAUSE_ISM_ADDR: "0xDeC953FDf8890AEDb5C549dF472A1231baBcE8AC"
-      IN_PAUSE: ${{ inputs.in_pause }}
+
       KDA_KEYFILE: keys/gh_pauser.yaml.gpg
       ETH_KEYSTORE: keys/eth_ism_pauser.json
+      ETH_PRIORITY_GAS_PRICE: "0.01gwei"
 
     steps:
       - name: Checkout repository
@@ -65,11 +68,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ETH_AADR=$(cast wallet address --password $PASSWORD)
-          NONCE=$(cast wallet nonce $ETH_AADR)
+          ETH_ADDR=$(cast wallet address --password $PASSWORD)
+          NONCE=$(cast nonce $ETH_ADDR)
 
-          echo "Eth Address: $ETH_AADR"
-          echo "ETH_AADR=$ETH_AADR" >> "$GITHUB_ENV"
+          echo "Eth Address: $ETH_ADDR"
+          echo "ETH_ADDR=$ETH_ADDR" >> "$GITHUB_ENV"
           echo "ETH_NONCE=$ETH_NONCE" >> "$GITHUB_ENV"
 
 
