@@ -64,12 +64,15 @@ jobs:
 
         shell: bash
         run: |
-          set -euo pipefail
+
           # Prapare config file
           echo "key: $KDA_PUBKEY" >> config.yaml
           echo "in-pause: $IN_PAUSE" >> config.yaml
 
+          # Gen the transaction
           $KDA gen -t do_pause.tkpl -d config.yaml
+
+          # Sign
           echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | $KDA sign tx.yaml -k -
           RESULT=$($KDA local tx.json)
           echo $RESULT | jq
