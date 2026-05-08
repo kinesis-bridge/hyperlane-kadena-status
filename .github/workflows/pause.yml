@@ -1,0 +1,54 @@
+name: Pause
+on:
+  workflow_dispatch:
+
+
+
+jobs:
+  fetch-and-publish-status:
+    runs-on: ubuntu-latest
+
+    env:
+      KDA_TOOL_VERSION: "1.2"
+      ETH_RPC_URL: ${{ vars.ETH_RPC_URL }}
+      KADENA_RPC_URL: ${{ vars.KADENA_RPC_URL }}
+      PAUSE_HOOK_ADDR: "0x9e55757C3EF8bcA9015F9d0A6287ccE79215cA07"
+      PAUSE_ISM_ADDR: "0xDeC953FDf8890AEDb5C549dF472A1231baBcE8AC"
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Checkout keys repos
+        uses: actions/checkout@v6
+        with:
+          repository: kinesis-bridge/kadena-hyperlane-keys
+          path: keys
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Install KDA tool
+        run: |
+          ARCHIVE=kda-tool-${KDA_TOOL_VERSION}-ubuntu-24.04.tar.gz
+          wget https://github.com/kda-community/kda-tool/releases/download/${KDA_TOOL_VERSION}/$ARCHIVE
+          tar xzf $ARCHIVE
+          echo "KDA_TOOL_BIN=kda-tool-${KDA_TOOL_VERSION}/kda" >> "$GITHUB_ENV"
+
+      - name: Configure KDA tool
+        run: |
+          mkdir -p ~/.config/kda
+          jq -n --arg value "$KADENA_RPC_URL" '{networks: {mainnet01: $value}}' > ~/.config/kda/config.json
+
+      - name: Get Kadena Public key
+        id: kda_pubkey
+        env:
+          PASSWORD: ${{ secrets.KDA_PAUSER_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # It's a single key password =
+          KDA_PUBKEY=$(echo $PASSWORD | | gpg --batch --yes --passphrase-fd 0  | grep -oP '^public:\s*\K.*')
+          echo "Public Key: $KDA_PUBKEY"
+          echo "KDA_PUBKEY=$KDA_PUBKEY" >> "$GITHUB_ENV"
