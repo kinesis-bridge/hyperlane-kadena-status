@@ -38,7 +38,7 @@ jobs:
           ARCHIVE=kda-tool-${KDA_TOOL_VERSION}-ubuntu-24.04.tar.gz
           wget https://github.com/kda-community/kda-tool/releases/download/${KDA_TOOL_VERSION}/$ARCHIVE
           tar xzf $ARCHIVE
-          echo "KDA_TOOL_BIN=kda-tool-${KDA_TOOL_VERSION}/kda" >> "$GITHUB_ENV"
+          echo "KDA=kda-tool-${KDA_TOOL_VERSION}/kda" >> "$GITHUB_ENV"
 
       - name: Configure KDA tool
         run: |
@@ -69,7 +69,7 @@ jobs:
           echo "key: $KDA_PUBKEY" >> config.yaml
           echo "in-pause: $IN_PAUSE" >> config.yaml
 
-          kda gen -t do_pause -d config.yaml
-          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | kda sign tx.yaml -k -
-          RESULT=$(kda local tx.json)
+          $KDA gen -t do_pause -d config.yaml
+          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | $KDA sign tx.yaml -k -
+          RESULT=$($KDA local tx.json)
           echo $RESULT | jq
