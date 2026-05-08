@@ -49,6 +49,6 @@ jobs:
         run: |
           set -euo pipefail
           # It's a single key password =
-          KDA_PUBKEY=$(echo $PASSWORD | gpg --batch --yes --passphrase-fd 0  | grep -oP '^public:\s*\K.*')
+          KDA_PUBKEY=$(echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | grep -oP '^public:\s*\K.*')
           echo "Public Key: $KDA_PUBKEY"
           echo "KDA_PUBKEY=$KDA_PUBKEY" >> "$GITHUB_ENV"
