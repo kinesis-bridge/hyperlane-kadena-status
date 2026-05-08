@@ -57,7 +57,7 @@ jobs:
           echo "Public Key: $KDA_PUBKEY"
           echo "KDA_PUBKEY=$KDA_PUBKEY" >> "$GITHUB_ENV"
 
-      - name: Hadnle Kadena contract
+      - name: Handle Kadena contract
         env:
           PASSWORD: ${{ secrets.KDA_PAUSER_PASSWORD }}
           IN_PAUSE: ${{ inputs.in_pause }}
@@ -69,7 +69,7 @@ jobs:
           echo "key: $KDA_PUBKEY" >> config.yaml
           echo "in-pause: $IN_PAUSE" >> config.yaml
 
-          $KDA gen -t do_pause -d config.yaml
+          $KDA gen -t do_pause.tkpl -d config.yaml
           echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | $KDA sign tx.yaml -k -
           RESULT=$($KDA local tx.json)
           echo $RESULT | jq
