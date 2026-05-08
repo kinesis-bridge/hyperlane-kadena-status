@@ -66,8 +66,8 @@ jobs:
         run: |
 
           # Prapare config file
-          echo "key: $KDA_PUBKEY" >> config.yaml
-          echo "in-pause: $IN_PAUSE" >> config.yaml
+          echo "key: \"$KDA_PUBKEY\"" >> config.yaml
+          echo 'in-pause: \"$IN_PAUSE\"" >> config.yaml
 
           # Gen the transaction
           $KDA gen -t do_pause.tkpl -d config.yaml
