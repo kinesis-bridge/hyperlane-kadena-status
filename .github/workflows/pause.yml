@@ -5,7 +5,7 @@ on:
 
 
 jobs:
-  fetch-and-publish-status:
+  do_pause:
     runs-on: ubuntu-latest
 
     env:
@@ -49,6 +49,6 @@ jobs:
         run: |
           set -euo pipefail
           # It's a single key password =
-          KDA_PUBKEY=$(echo $PASSWORD | | gpg --batch --yes --passphrase-fd 0  | grep -oP '^public:\s*\K.*')
+          KDA_PUBKEY=$(echo $PASSWORD | gpg --batch --yes --passphrase-fd 0  | grep -oP '^public:\s*\K.*')
           echo "Public Key: $KDA_PUBKEY"
           echo "KDA_PUBKEY=$KDA_PUBKEY" >> "$GITHUB_ENV"
