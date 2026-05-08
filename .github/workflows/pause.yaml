@@ -1,0 +1,4 @@
+name: Pause
+on:
+  push:     
+  workflow_dispatch:
