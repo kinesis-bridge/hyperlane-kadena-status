@@ -74,5 +74,5 @@ jobs:
 
           # Sign
           echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | $KDA sign tx.yaml -k - || true
-          RESULT=$($KDA local tx.json)
+          RESULT=$($KDA local tx.json || true)
           echo $RESULT | jq
