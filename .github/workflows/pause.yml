@@ -1,7 +1,11 @@
 name: Pause
 on:
   workflow_dispatch:
-
+    inputs:
+      in_pause:
+        description: 'Paused contracts True/False'
+        required: true
+        type: boolean
 
 
 jobs:
@@ -52,3 +56,20 @@ jobs:
           KDA_PUBKEY=$(echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | grep -oP '^public:\s*\K.*')
           echo "Public Key: $KDA_PUBKEY"
           echo "KDA_PUBKEY=$KDA_PUBKEY" >> "$GITHUB_ENV"
+
+      - name: Hadnle Kadena contract
+        env:
+          PASSWORD: ${{ secrets.KDA_PAUSER_PASSWORD }}
+          IN_PAUSE: ${{ inputs.in_pause }}
+
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Prapare config file
+          echo "key: $KDA_PUBKEY" >> config.yaml
+          echo "in-pause: $IN_PAUSE" >> config.yaml
+
+          kda gen -t do_pause -d config.yaml
+          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | kda sign tx.yaml -k -
+          RESULT=$(kda local tx.json)
+          echo $RESULT | jq

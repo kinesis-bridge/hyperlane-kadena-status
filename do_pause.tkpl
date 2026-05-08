@@ -1,0 +1,20 @@
+code: ({{ns}}.mailbox.pause {{in-pause}})
+
+data:
+
+meta:
+  chainId: "{{chain}}"
+  sender: r:{{ns}}.bridge-pausers
+  gasLimit: 1000
+  gasPrice: 0.00000001
+  ttl: 86400
+
+networkId: {{network}}
+
+signers:
+  - public: {{key}}
+    caps:
+      - name: "{{ns}}.mailbox.PAUSE"
+        args: []
+      - name: coin.GAS
+        args: []
