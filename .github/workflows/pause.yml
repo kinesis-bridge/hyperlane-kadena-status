@@ -73,6 +73,6 @@ jobs:
           $KDA gen -t do_pause.tkpl -d config.yaml
 
           # Sign
-          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | $KDA sign tx.yaml -k -
+          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | $KDA sign tx.yaml -k - || true
           RESULT=$($KDA local tx.json)
           echo $RESULT | jq
