@@ -18,7 +18,9 @@ jobs:
       KADENA_RPC_URL: ${{ vars.KADENA_RPC_URL }}
       PAUSE_HOOK_ADDR: "0x9e55757C3EF8bcA9015F9d0A6287ccE79215cA07"
       PAUSE_ISM_ADDR: "0xDeC953FDf8890AEDb5C549dF472A1231baBcE8AC"
-
+      IN_PAUSE: ${{ inputs.in_pause }}
+      KDA_KEYFILE: keys/gh_pauser.yaml.gpg
+      ETH_KEYSTORE: keys/eth_ism_pauser.json
 
     steps:
       - name: Checkout repository
@@ -45,22 +47,35 @@ jobs:
           mkdir -p ~/.config/kda
           jq -n --arg value "$KADENA_RPC_URL" '{networks: {mainnet01: $value}}' > ~/.config/kda/config.json
 
-      - name: Get Kadena Public key
+      - name: Find Kadena Public key
         id: kda_pubkey
         env:
           PASSWORD: ${{ secrets.KDA_PAUSER_PASSWORD }}
         shell: bash
         run: |
           set -euo pipefail
-          # It's a single key password =
-          KDA_PUBKEY=$(echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | grep -oP '^public:\s*\K.*')
+          KDA_PUBKEY=$(echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 $KDA_KEYFILE | grep -oP '^public:\s*\K.*')
           echo "Public Key: $KDA_PUBKEY"
           echo "KDA_PUBKEY=$KDA_PUBKEY" >> "$GITHUB_ENV"
 
-      - name: Handle Kadena contract
+      - name: Find Eth Address and nonce
+        env:
+          PASSWORD: ${{ secrets.ETH_PAUSER_PASSWORD }}
+
+        shell: bash
+        run: |
+          set -euo pipefail
+          ETH_AADR=$(cast wallet address --password $PASSWORD)
+          NONCE=$(cast wallet nonce $ETH_AADR)
+
+          echo "Eth Address: $ETH_AADR"
+          echo "ETH_AADR=$ETH_AADR" >> "$GITHUB_ENV"
+          echo "ETH_NONCE=$ETH_NONCE" >> "$GITHUB_ENV"
+
+
+      - name: Pause Kadena contract
         env:
           PASSWORD: ${{ secrets.KDA_PAUSER_PASSWORD }}
-          IN_PAUSE: ${{ inputs.in_pause }}
 
         shell: bash
         run: |
@@ -73,6 +88,6 @@ jobs:
           $KDA gen -t do_pause.tkpl -d config.yaml
 
           # Sign
-          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 keys/gh_pauser.yaml.gpg | $KDA sign tx.yaml -k - || true
+          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 KDA_KEYFILE| $KDA sign tx.yaml -k - || true
           RESULT=$($KDA local tx.json || true)
           echo $RESULT | jq
