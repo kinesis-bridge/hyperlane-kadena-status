@@ -169,7 +169,7 @@ jobs:
           cat CNAME > ./public/CNAME
 
       - name: Send Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v7
         with:
           path: ./public
 
