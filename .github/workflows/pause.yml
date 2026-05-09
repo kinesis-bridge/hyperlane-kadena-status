@@ -54,7 +54,7 @@ jobs:
         env:
           PASSWORD: ${{ secrets.ETH_PAUSER_PASSWORD }}
         run: |
-          echo "PASSWORD" > ./.eth_wallet_password
+          echo "$PASSWORD" > ./.eth_wallet_password
           echo "ETH_PASSWORD=./.eth_wallet_password" >> "$GITHUB_ENV"
 
       - name: Find Kadena Public key
