@@ -102,7 +102,9 @@ jobs:
 
         shell: bash
         run: |
-          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool) --from $ETH_ADDR")
+          ZERO=$(cast address-zero)
+
+          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)" --from $ZERO)
 
           echo "$CURRENT_VALUE" == "$IN_PAUSE"
 
