@@ -22,7 +22,7 @@ jobs:
       PAUSE_ISM_ADDR: "0xDeC953FDf8890AEDb5C549dF472A1231baBcE8AC"
 
       KDA_KEYFILE: keys/gh_pauser.yaml.gpg
-      #ETH_KEYSTORE: keys/eth_ism_pauser.json
+      ETH_KEYSTORE: keys/eth_ism_pauser.json
       ETH_PRIORITY_GAS_PRICE: "0.01gwei"
 
     steps:
@@ -102,12 +102,11 @@ jobs:
 
         shell: bash
         run: |
-          set -x
           echo "Start"
           ZERO=$(cast address-zero)
 
           echo "Got Zero"
-          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)" --from $ZERO)
+          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)" --password $PASSWORD)
 
           echo "$CURRENT_VALUE" == "$IN_PAUSE"
 
