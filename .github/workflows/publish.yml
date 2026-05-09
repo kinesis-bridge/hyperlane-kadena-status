@@ -162,6 +162,8 @@ jobs:
              -D__DATE__="$DATE" \
              index_template.html > public/index.html
 
+          cat public/index.html
+
       - name: Add CNAME file
         run: |
           cat CNAME > ./public/CNAME
