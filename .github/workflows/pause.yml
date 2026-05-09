@@ -102,6 +102,7 @@ jobs:
 
         shell: bash
         run: |
+          set -x
           echo "Start"
           ZERO=$(cast address-zero)
 
