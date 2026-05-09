@@ -41,7 +41,7 @@ jobs:
       - name: Install KDA tool
         run: |
           ARCHIVE=kda-tool-${KDA_TOOL_VERSION}-ubuntu-24.04.tar.gz
-          wget https://github.com/kda-community/kda-tool/releases/download/${KDA_TOOL_VERSION}/$ARCHIVE
+          wget -nv https://github.com/kda-community/kda-tool/releases/download/${KDA_TOOL_VERSION}/$ARCHIVE
           tar xzf $ARCHIVE
           echo "KDA=kda-tool-${KDA_TOOL_VERSION}/kda" >> "$GITHUB_ENV"
 
@@ -102,7 +102,7 @@ jobs:
 
         shell: bash
         run: |
-          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)")
+          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool) --from 0x00")
 
           echo "$CURRENT_VALUE" == "$IN_PAUSE"
 
@@ -112,10 +112,10 @@ jobs:
           else
             if [ "$IN_PAUSE" == "true" ]
               then
-                cast send $PAUSE_HOOK_ADDR "pause()" --async --nonce $ETH_NONCE
+                cast send $PAUSE_HOOK_ADDR "pause()" --async --nonce $ETH_NONCE --password $PASSWORD
 
               else
-                cast send $PAUSE_HOOK_ADDR "unpause()" --async --nonce $ETH_NONCE
+                cast send $PAUSE_HOOK_ADDR "unpause()" --async --nonce $ETH_NONCE --password $PASSWORD
             fi
 
             NEW_NONCE=$((ETH_NONCE + 1))
