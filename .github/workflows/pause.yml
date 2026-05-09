@@ -1,9 +1,9 @@
-name: Pause
+name: Change Pausing State
 on:
   workflow_dispatch:
     inputs:
       in_pause:
-        description: 'Paused contracts True/False'
+        description: 'Tick to pause, do not tick to unpause'
         required: true
         type: boolean
 
@@ -82,8 +82,7 @@ jobs:
 
         shell: bash
         run: |
-
-          # Prapare config file
+          # Prepare config file
           echo "key: \"$KDA_PUBKEY\"" >> config.yaml
           echo "in-pause: \"$IN_PAUSE\"" >> config.yaml
 
@@ -91,6 +90,30 @@ jobs:
           $KDA gen -t do_pause.tkpl -d config.yaml
 
           # Sign
-          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 KDA_KEYFILE| $KDA sign tx.yaml -k - || true
-          RESULT=$($KDA local tx.json || true)
+          echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 $KDA_KEYFILE| $KDA sign tx.yaml -k -
+          RESULT=$($KDA local tx.json)
           echo $RESULT | jq
+
+      - name: Pause Eth Hook
+        env:
+          PASSWORD: ${{ secrets.ETH_PAUSER_PASSWORD }}
+
+        shell: bash
+        run: |
+          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)")
+
+          if [ "$CURRENT_VALUE" == "$IN_PAUSE" ]
+          then
+            echo "Hook contract already in state: $CURRENT_VALUE"
+          else
+            if [ "$IN_PAUSE" == "true" ]
+              then
+                cast send $PAUSE_HOOK_ADDR "pause()" --async --nonce $ETH_NONCE
+
+              else
+                cast send $PAUSE_HOOK_ADDR "unpause()" --async --nonce $ETH_NONCE
+            fi
+
+            NEW_NONCE=$((ETH_NONCE + 1))
+            echo "ETH_NONCE=$NEW_NONCE" >> "$GITHUB_ENV"
+          fi
