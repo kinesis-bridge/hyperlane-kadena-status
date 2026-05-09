@@ -52,7 +52,7 @@ jobs:
 
       - name: Configure Cast
         env:
-          - PASSWORD: ${{ secrets.ETH_PAUSER_PASSWORD }}
+          PASSWORD: ${{ secrets.ETH_PAUSER_PASSWORD }}
         run: |
           echo "PASSWORD" > ./.eth_wallet_password
           echo "ETH_PASSWORD=./.eth_wallet_password" >> "$GITHUB_ENV"
