@@ -1,4 +1,4 @@
-name: Publish data
+name: Publish backend data
 on:
   push:
 
@@ -10,7 +10,8 @@ permissions:
   id-token: write
 
 jobs:
-  fetch-and-publish-status:
+  fetch-and-gen-status:
+    name: Fetch on-chain data and gen
     runs-on: ubuntu-latest
 
     env:
@@ -145,6 +146,20 @@ jobs:
         run: |
           OUTDIR=./public/admin-actions/bridge-status/
           cat "$OUTDIR/$CURRENT_PHASE"
+
+      - name: Prepare index file
+        env:
+          ETH_HOOK_STATUS: ${{ steps.eth_status.outputs.result_hook }}
+          ETH_ISM_STATUS: ${{ steps.eth_status.outputs.result_ism }}
+          KDA_STATUS: ${{ steps.kda_status.outputs.result }}
+
+        run: |
+          DATE=$(date)
+          m4 -D__KADENA_PAUSED__=$KDA_STATUS \
+             -D___HOOK_PAUSED__=$ETH_HOOK_STATUS \
+             -D__ISM_PAUSED__=$ETH_ISM_STATUS \
+             -D__DATE__=$DATE \
+             index_template.html > .public/index.html
 
       - name: Add CNAME file
         run: |
