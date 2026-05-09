@@ -50,6 +50,13 @@ jobs:
           mkdir -p ~/.config/kda
           jq -n --arg value "$KADENA_RPC_URL" '{networks: {mainnet01: $value}}' > ~/.config/kda/config.json
 
+      - name: Configure Cast
+        env:
+          - PASSWORD: ${{ secrets.ETH_PAUSER_PASSWORD }}
+        run: |
+          echo "PASSWORD" > ./.eth_wallet_password
+          echo "ETH_PASSWORD=./.eth_wallet_password" >> "$GITHUB_ENV"
+
       - name: Find Kadena Public key
         id: kda_pubkey
         env:
@@ -62,13 +69,11 @@ jobs:
           echo "KDA_PUBKEY=$KDA_PUBKEY" >> "$GITHUB_ENV"
 
       - name: Find Eth Address and nonce
-        env:
-          PASSWORD: ${{ secrets.ETH_PAUSER_PASSWORD }}
 
         shell: bash
         run: |
           set -euo pipefail
-          ETH_ADDR=$(cast wallet address --password $PASSWORD)
+          ETH_ADDR=$(cast wallet address)
           NONCE=$(cast nonce $ETH_ADDR)
 
           echo "Eth Address: $ETH_ADDR"
@@ -97,8 +102,6 @@ jobs:
 
       - name: Pause Eth Hook
         continue-on-error: true
-        env:
-          PASSWORD: ${{ secrets.ETH_PAUSER_PASSWORD }}
 
         shell: bash
         run: |
@@ -106,7 +109,7 @@ jobs:
           ZERO=$(cast address-zero)
 
           echo "Got Zero"
-          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)" --password $PASSWORD)
+          CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)")
 
           echo "$CURRENT_VALUE" == "$IN_PAUSE"
 
@@ -116,10 +119,10 @@ jobs:
           else
             if [ "$IN_PAUSE" == "true" ]
               then
-                cast send $PAUSE_HOOK_ADDR "pause()" --async --nonce $ETH_NONCE --password $PASSWORD
+                cast send $PAUSE_HOOK_ADDR "pause()" --async --nonce $ETH_NONCE
 
               else
-                cast send $PAUSE_HOOK_ADDR "unpause()" --async --nonce $ETH_NONCE --password $PASSWORD
+                cast send $PAUSE_HOOK_ADDR "unpause()" --async --nonce $ETH_NONCE
             fi
 
             NEW_NONCE=$((ETH_NONCE + 1))
