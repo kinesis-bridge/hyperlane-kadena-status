@@ -157,7 +157,7 @@ jobs:
           mkdir -p public
           DATE=$(date)
           m4 -D__KADENA_PAUSED__=$KDA_STATUS \
-             -D___HOOK_PAUSED__=$ETH_HOOK_STATUS \
+             -D__HOOK_PAUSED__=$ETH_HOOK_STATUS \
              -D__ISM_PAUSED__=$ETH_ISM_STATUS \
              -D__DATE__="$DATE" \
              index_template.html > public/index.html
