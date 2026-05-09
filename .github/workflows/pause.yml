@@ -102,8 +102,10 @@ jobs:
 
         shell: bash
         run: |
+          echo "Start"
           ZERO=$(cast address-zero)
 
+          echo "Got Zero"
           CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)" --from $ZERO)
 
           echo "$CURRENT_VALUE" == "$IN_PAUSE"
