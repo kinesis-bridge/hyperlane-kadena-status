@@ -4,6 +4,10 @@ on:
 
   workflow_dispatch:
 
+  workflow_run:
+    workflows: ["Change Pausing State"]
+    types: [completed]
+
 permissions:
   contents: read
   pages: write

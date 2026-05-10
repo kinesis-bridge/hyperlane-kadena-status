@@ -7,6 +7,10 @@ on:
         required: true
         type: boolean
 
+concurrency:
+  group: pause-group
+  cancel-in-progress: false
+
 
 jobs:
   do_pause:
@@ -14,6 +18,7 @@ jobs:
 
     env:
       IN_PAUSE: ${{ inputs.in_pause }}
+      ETH_FUNCTION: ${{ inputs.in_pause && 'pause()' || 'unpause()' }}
 
       KDA_TOOL_VERSION: "1.2"
       ETH_RPC_URL: ${{ vars.ETH_RPC_URL }}
@@ -105,26 +110,26 @@ jobs:
 
         shell: bash
         run: |
-          echo "Start"
-          ZERO=$(cast address-zero)
-
-          echo "Got Zero"
           CURRENT_VALUE=$(cast call $PAUSE_HOOK_ADDR "paused()(bool)")
-
-          echo "$CURRENT_VALUE" == "$IN_PAUSE"
 
           if [ "$CURRENT_VALUE" == "$IN_PAUSE" ]
           then
             echo "Hook contract already in state: $CURRENT_VALUE"
           else
-            if [ "$IN_PAUSE" == "true" ]
-              then
-                cast send $PAUSE_HOOK_ADDR "pause()" --async --nonce $ETH_NONCE
+            cast send $PAUSE_HOOK_ADDR "$ETH_FUNCTION" --async --nonce $ETH_NONCE
+            echo "ETH_NONCE=$((ETH_NONCE + 1))" >> "$GITHUB_ENV"
+          fi
 
-              else
-                cast send $PAUSE_HOOK_ADDR "unpause()" --async --nonce $ETH_NONCE
-            fi
+      - name: Pause Eth ISM
+        continue-on-error: true
 
-            NEW_NONCE=$((ETH_NONCE + 1))
-            echo "ETH_NONCE=$NEW_NONCE" >> "$GITHUB_ENV"
+        shell: bash
+        run: |
+          CURRENT_VALUE=$(cast call $PAUSE_ISM_ADDR "paused()(bool)")
+
+          if [ "$CURRENT_VALUE" == "$IN_PAUSE" ]
+          then
+            echo "ISM contract already in state: $CURRENT_VALUE"
+          else
+            cast send $PAUSE_ISM_ADDR "$ETH_FUNCTION" --async --nonce $ETH_NONCE
           fi
