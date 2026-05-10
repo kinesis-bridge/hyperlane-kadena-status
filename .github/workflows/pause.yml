@@ -104,6 +104,7 @@ jobs:
           echo $PASSWORD | gpg -d --batch --yes --passphrase-fd 0 $KDA_KEYFILE| $KDA sign tx.yaml -k -
           RESULT=$($KDA local tx.json)
           echo $RESULT | jq
+          $KDA send tx.json
 
       - name: Pause Eth Hook
         continue-on-error: true
@@ -133,3 +134,7 @@ jobs:
           else
             cast send $PAUSE_ISM_ADDR "$ETH_FUNCTION" --async --nonce $ETH_NONCE
           fi
+
+      - name: Sleep
+        run: |
+          sleep 180
